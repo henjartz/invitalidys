@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boda de Josué & Alidys</title>
+         
+    <!-- Fuentes Elegantes con soporte latino/español completo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,400;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+         
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'blanco-puro': '#FFFFFF',
+                        marfil: '#F8F9FA',
+                        'eucalipto-suave': '#94B0A5',
+                        eucalipto: '#5F8575',
+                        'azul-oscuro': '#1A2530',
+                        dorado: '#C5A059',
+                        'dorado-oscuro': '#9E7D3B',
+                        terracota: '#8B4513'
+                    },
+                    fontFamily: {
+                        titulo: ['Cinzel', 'serif'],
+                        cursiva: ['"Great Vibes"', '"Cormorant Garamond"', 'serif'],
+                        subtitulo: ['"Cormorant Garamond"', 'serif'],
+                        cuerpo: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        body {
+            background-color: #F8F9FA;
+            background-image: url('assets/fondo_textura.webp');
+            background-repeat: repeat;
+            background-position: center;
+            color: #1A2530;
+        }
+
+        .bg-textura-invitacion {
+            background-color: #FBFBFA;
+            background-image: url('assets/fondo_textura.webp');
+            background-repeat: repeat;
+            background-position: center;
+        }
+
+        .shadow-soft {
+            box-shadow: 0 15px 35px -5px rgba(26, 37, 48, 0.06), 0 5px 15px -3px rgba(197, 160, 89, 0.08);
+        }
+
+        .shadow-floating {
+            box-shadow: 0 20px 40px -10px rgba(95, 133, 117, 0.15), 0 8px 16px -4px rgba(26, 37, 48, 0.06);
+        }
+
+        .marco-botanico {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            box-shadow: 0 10px 30px -5px rgba(26, 37, 48, 0.04);
+            border-radius: 4px;
+        }
+
+        .marco-botanico::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid rgba(95, 133, 117, 0.25);
+            pointer-events: none;
+            border-radius: 2px;
+        }
+
+        /* ANIMACIÓN AL 50% DE VELOCIDAD */
+        .escena-sobre-3d {
+            perspective: 1600px;
+            perspective-origin: center;
+        }
+        
+        .pieza-sobre {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            will-change: transform, opacity;
+            transition: transform 4.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 4s ease-in-out;
+            backface-visibility: hidden;
+        }
+        
+        .sombra-base-sobre {
+            filter: drop-shadow(0px 16px 24px rgba(26, 37, 48, 0.2)) 
+                    drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.12));
+        }
+        
+        .solapa-derecha   { transform-origin: right center; }
+        .solapa-izquierda { transform-origin: left center; }
+        .solapa-arriba    { transform-origin: top center; }
+        .solapa-abajo     { transform-origin: bottom center; }
+        
+        .sobre-abierto .solapa-derecha   { transform: rotateY(155deg); }
+        .sobre-abierto .solapa-izquierda { transform: rotateY(-155deg); }
+        .sobre-abierto .solapa-arriba    { transform: rotateX(155deg); }
+        .sobre-abierto .solapa-abajo     { transform: rotateX(-155deg); }
+        
+        .zoom-revelar {
+            transition: transform 4s cubic-bezier(0.16, 1, 0.3, 1), opacity 3.6s ease-in-out;
+            transform: scale(1.15);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .entrada-invitacion {
+            transition: opacity 3.2s ease-in-out, transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .contenedor-sello {
+            width: 130px; 
+            height: 130px;
+            transition: transform 1.2s ease, opacity 1.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-cuerpo antialiased overflow-x-hidden min-h-screen" x-data="weddingApp()">
+
+    <!-- CONTENEDOR DEL SOBRE FULLSCREEN -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#F8F9FA] escena-sobre-3d overflow-hidden" 
+         :class="{ 'zoom-revelar': envelopeDisappeared }" 
+         x-show="!envelopeDisappeared">
+        
+        <div class="relative w-full h-full max-w-md mx-auto flex items-center justify-center cursor-pointer select-none" 
+             :class="{ 'sobre-abierto': envelopeOpen }" 
+             @click="abrirSobre()">
+            
+            <img src="assets/sobre_izquierda.webp" alt="Base Sobre" class="pieza-sobre solapa-izquierda sombra-base-sobre">
+            <img src="assets/sobre_arriba.webp" alt="Lateral Arriba" class="pieza-sobre solapa-arriba">
+            <img src="assets/sobre_abajo.webp" alt="Lateral Abajo" class="pieza-sobre solapa-abajo">
+            <img src="assets/sobre_derecha.webp" alt="Solapa Principal" class="pieza-sobre solapa-derecha">
+
+            <div class="absolute z-20 flex flex-col items-center justify-center pointer-events-auto transition-all duration-1000"
+                 :class="{ 'opacity-0 scale-75 pointer-events-none': envelopeOpen }">
+                 
+                <div class="contenedor-sello flex items-center justify-center">
+                    <img src="assets/Sobre_sello.webp" 
+                         alt="Sello de Cera" 
+                         class="w-full h-full object-contain filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)] transform hover:scale-105 active:scale-95 transition-transform duration-300">
+                </div>
+                <p class="mt-4 font-titulo text-[11px] tracking-[0.25em] text-[#9E7D3B] uppercase font-bold animate-pulse text-center bg-white/80 backdrop-blur-xs px-4 py-1.5 rounded-full border border-dorado/30 shadow-sm">
+                    Tocar sello para abrir
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL DE LA INVITACIÓN -->
+    <main class="max-w-md mx-auto bg-textura-invitacion shadow-2xl min-h-screen relative pb-20 border-x border-dorado/30 entrada-invitacion"
+          :class="contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'">
+         
+        <!-- CABECERA DE BIENVENIDA -->
+        <section class="pt-16 pb-12 px-6 text-center relative overflow-hidden">
+            <div class="w-10 h-10 mx-auto mb-3 text-dorado flex items-center justify-center">
+                <i data-lucide="sparkles" class="w-full h-full stroke-1"></i>
+            </div>
+                 
+            <p class="font-titulo text-xs tracking-[0.35em] uppercase text-dorado-oscuro mb-3 font-semibold">Nos Casamos</p>
+            <h1 class="font-titulo text-3xl sm:text-4xl text-azul-oscuro tracking-wide mb-1 drop-shadow-xs">JOSUÉ MORALES</h1>
+            <p class="font-cursiva text-5xl text-eucalipto my-1">&</p>
+            <h1 class="font-titulo text-3xl sm:text-4xl text-azul-oscuro tracking-wide mb-8 drop-shadow-xs">ALIDYS LISCANO</h1>
+            
+            <!-- TARJETA DE BIENVENIDA CON UNIFICACIÓN TIPOGRÁFICA -->
+            <div class="marco-botanico p-7 shadow-soft mx-2">
+                <p class="font-cursiva text-4xl text-eucalipto mb-2">¡Hola, <span x-text="guestName"></span>!</p>
+                <p class="text-xs leading-relaxed text-azul-oscuro/85 font-light">
+                    Queremos que formes parte de este momento tan especial para nosotros. Tu presencia hará de nuestro día un recuerdo inolvidable.
+                </p>
+            </div>
+        </section>
+
+        <!-- CONTADOR REGRESIVO ELEGANTE -->
+        <section class="py-12 px-6 bg-azul-oscuro text-marfil text-center relative shadow-inner overflow-hidden border-y-2 border-dorado">
+            <p class="font-titulo text-xs tracking-[0.25em] uppercase text-dorado mb-8 font-semibold">Faltan Exactamente</p>
+                 
+            <div class="flex justify-center gap-3 relative z-10">
+                <div class="flex flex-col items-center w-16 p-3 bg-blanco-puro/10 backdrop-blur-md rounded border border-dorado/40 shadow-md">
+                    <span class="font-titulo text-2xl font-bold text-dorado" x-text="countdown.days">00</span>
+                    <span class="text-[9px] uppercase tracking-widest text-marfil/90 mt-1">Días</span>
+                </div>
+                <div class="flex flex-col items-center w-16 p-3 bg-blanco-puro/10 backdrop-blur-md rounded border border-dorado/40 shadow-md">
+                    <span class="font-titulo text-2xl font-bold text-dorado" x-text="countdown.hours">00</span>
+                    <span class="text-[9px] uppercase tracking-widest text-marfil/90 mt-1">Horas</span>
+                </div>
+                <div class="flex flex-col items-center w-16 p-3 bg-blanco-puro/10 backdrop-blur-md rounded border border-dorado/40 shadow-md">
+                    <span class="font-titulo text-2xl font-bold text-dorado" x-text="countdown.minutes">00</span>
+                    <span class="text-[9px] uppercase tracking-widest text-marfil/90 mt-1">Min</span>
+                </div>
+                <div class="flex flex-col items-center w-16 p-3 bg-blanco-puro/10 backdrop-blur-md rounded border border-dorado/40 shadow-md">
+                    <span class="font-titulo text-2xl font-bold text-dorado" x-text="countdown.seconds">00</span>
+                    <span class="text-[9px] uppercase tracking-widest text-marfil/90 mt-1">Seg</span>
+                </div>
+            </div>
+            <p class="mt-8 font-titulo text-xs tracking-[0.2em] text-dorado font-semibold">SÁBADO, 14 DE NOVIEMBRE DE 2026</p>
+        </section>
+
+        <!-- UBICACIÓN UNIFICADA BOTÁNICA -->
+        <section class="py-14 px-6 text-center">
+            <h2 class="font-titulo text-xl text-azul-oscuro mb-2 tracking-widest uppercase font-semibold">Lugar del Evento</h2>
+            <div class="w-16 h-0.5 bg-dorado/70 mx-auto mb-8"></div>
+            
+            <div class="marco-botanico p-7 shadow-soft">
+                <i data-lucide="church" class="w-8 h-8 mx-auto text-eucalipto mb-3 stroke-1.5"></i>
+                <h3 class="font-titulo text-lg font-bold text-azul-oscuro mb-1">Casa Grande</h3>
+                <p class="text-xs text-eucalipto font-medium mb-5 tracking-wide">Ceremonia Eclesiástica & Recepción</p>
+                         
+                <p class="text-xs text-azul-oscuro/80 font-light mb-1"><strong>Hora de Inicio:</strong> 6:00 PM</p>
+                <p class="text-xs text-azul-oscuro/80 font-light mb-7">Av. Manaure, Coro 4101, Falcón, Venezuela.</p>
+
+                <a href="https://maps.app.goo.gl/WmzYhsFitefC7a7E8" target="_blank" rel="noopener" 
+                   class="inline-flex items-center gap-2 border border-eucalipto text-eucalipto px-7 py-3 text-xs font-titulo tracking-widest uppercase hover:bg-eucalipto hover:text-blanco-puro transition-all duration-300 shadow-xs hover:shadow-md rounded-xs">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i> Ver en Google Maps
+                </a>
+            </div>
+        </section>
+
+        <!-- CRONOGRAMA -->
+        <section x-show="mostrarCronograma" class="py-14 px-6 bg-marfil/60 text-center border-y border-dorado/30" x-cloak>
+            <h2 class="font-titulo text-xl text-azul-oscuro mb-8 tracking-widest uppercase font-semibold">Itinerario</h2>
+            <div class="relative max-w-xs mx-auto border-l-2 border-dorado/50 text-left pl-6 space-y-8">
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
+                    <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Ceremonia Religiosa</h4>
+                    <p class="text-xs text-azul-oscuro/70 font-light">04:00 PM</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
+                    <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Cóctel de Bienvenida</h4>
+                    <p class="text-xs text-azul-oscuro/70 font-light">06:00 PM</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
+                    <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Banquete</h4>
+                    <p class="text-xs text-azul-oscuro/70 font-light">07:30 PM</p>
+                </div>
+                <div class="relative">
+                    <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
+                    <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Fiesta & Celebración</h4>
+                    <p class="text-xs text-azul-oscuro/70 font-light">09:00 PM</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CÓDIGO DE VESTIMENTA -->
+        <section class="py-14 px-6 text-center">
+            <i data-lucide="scissors" class="w-6 h-6 mx-auto text-dorado mb-3 stroke-1.5"></i>
+            <h2 class="font-titulo text-lg text-azul-oscuro mb-2 tracking-widest uppercase font-semibold">Código de Vestimenta</h2>
+            <p class="font-titulo text-xs uppercase font-bold text-eucalipto mb-4 tracking-wider">Rigurosa Etiqueta / Formal</p>
+            <p class="text-xs font-light text-azul-oscuro/85 mb-7 max-w-xs mx-auto leading-relaxed">
+                Sugerimos tonos elegantes y colores pastel, evitando verde eucalipto y azul oscuro. <br>Reservamos amablemente el color blanco para la novia.
+            </p>
+                 
+            <div class="flex justify-center gap-4">
+                <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #5F8575;" title="Verde Eucalipto"></div>
+                <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #94B0A5;" title="Eucalipto Suave"></div>
+                <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #1A2530;" title="Azul Oscuro"></div>
+                <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #C5A059;" title="Dorado"></div>
+            </div>
+        </section>
+
+        <!-- FORMULARIO RSVP -->
+        <section class="py-14 px-6 bg-azul-oscuro text-marfil text-center relative border-t-2 border-dorado" id="rsvp">
+            <h2 class="font-titulo text-xl text-dorado mb-1 tracking-widest uppercase font-semibold">Confirmación de Asistencia</h2>
+            <p class="text-[10px] tracking-widest uppercase text-marfil/70 mb-8 font-light">Por favor confirma antes del 01 de Noviembre de 2026</p>
+
+            <div x-show="rsvpState.checking" class="py-8">
+                <i data-lucide="loader-2" class="w-8 h-8 mx-auto animate-spin text-dorado"></i>
+                <p class="mt-3 text-xs font-light text-marfil/80">Verificando invitación...</p>
+            </div>
+
+            <div x-show="!rsvpState.checking && !rsvpState.submitted && !rsvpState.alreadyResponded" x-cloak class="max-w-xs mx-auto text-left space-y-6">
+                <div>
+                    <label class="block text-[10px] uppercase font-titulo tracking-widest text-dorado mb-1.5 font-semibold">Nombre del Invitado</label>
+                    <input type="text" x-model="guestName" readonly class="w-full bg-eucalipto-suave/10 border-b border-dorado/60 py-2.5 px-3 text-sm font-titulo text-marfil focus:outline-none cursor-not-allowed rounded-t-xs">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-titulo tracking-widest text-dorado mb-1.5 font-semibold">Número de Pases Confirmados</label>
+                    <select x-model="form.pases" class="w-full bg-azul-oscuro border-b border-dorado/60 py-2.5 px-3 text-sm font-cuerpo text-marfil focus:outline-none cursor-pointer rounded-t-xs">
+                        <template x-for="n in maxPases" :key="n">
+                            <option :value="n" x-text="n + (n === 1 ? ' Pase' : ' Pases')"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="pt-4 flex flex-col gap-3.5">
+                    <button @click="iniciarConfirmacion('Asistir ')" class="bg-eucalipto text-blanco-puro py-3.5 text-xs font-titulo font-bold tracking-widest uppercase hover:bg-eucalipto-suave transition-all duration-300 shadow-md hover:shadow-lg rounded-xs">
+                        Sí, Asistiré
+                    </button>
+                    <button @click="iniciarConfirmacion('No asistir ')" class="border border-dorado/60 text-dorado py-3.5 text-xs font-titulo tracking-widest uppercase hover:bg-dorado/10 transition-colors rounded-xs">
+                        Lo Siento, No Asistiré
+                    </button>
+                </div>
+            </div>
+
+            <div x-show="rsvpState.alreadyResponded && !rsvpState.submitted" x-cloak class="py-6 marco-botanico bg-eucalipto/20 text-marfil border-dorado/40">
+                <i data-lucide="check-circle-2" class="w-8 h-8 mx-auto text-dorado mb-2"></i>
+                <p class="font-titulo text-sm text-dorado mb-1 font-bold">Ya hemos registrado tu respuesta</p>
+                <p class="text-xs font-light text-marfil/90">Si necesitas modificar tu asistencia, comunícate directamente con Josué o Alidys.</p>
+            </div>
+
+            <div x-show="rsvpState.submitted" x-cloak class="py-6">
+                <i data-lucide="heart" class="w-10 h-10 mx-auto text-dorado mb-3"></i>
+                <p class="font-titulo text-lg text-dorado mb-2" x-text="form.estado === 'Asistir ' ? '¡Nos vemos en la boda!' : 'Lamentamos que no puedas acompañarnos'"></p>
+                <p class="text-xs font-light text-marfil/80">Gracias por tu confirmación.</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE REGALOS -->
+        <section class="py-14 px-6 text-center">
+            <i data-lucide="gift" class="w-8 h-8 mx-auto text-dorado mb-3 stroke-1.5"></i>
+            <h2 class="font-titulo text-xl text-azul-oscuro mb-2 tracking-widest uppercase font-semibold">Mesa de Regalos</h2>
+            <p class="text-xs font-light text-azul-oscuro/85 mb-8 max-w-xs mx-auto leading-relaxed">
+                Tu presencia es nuestro mayor regalo. Si deseas realizar un obsequio adicional, te compartimos nuestras opciones:
+            </p>
+            <div class="flex flex-col gap-3.5 max-w-xs mx-auto">
+                <button @click="abrirModalRegalosFisicos()" class="border border-eucalipto text-eucalipto py-3.5 text-xs font-titulo font-bold tracking-widest uppercase hover:bg-eucalipto hover:text-blanco-puro transition-all duration-300 shadow-xs hover:shadow-md rounded-xs">
+                    Lista de Regalos Sugeridos
+                </button>
+                <button @click="modals.efectivo = true" class="border border-eucalipto text-eucalipto py-3.5 text-xs font-titulo font-bold tracking-widest uppercase hover:bg-eucalipto hover:text-blanco-puro transition-all duration-300 shadow-xs hover:shadow-md rounded-xs">
+                    Regalo Económico
+                </button>
+            </div>
+        </section>
+
+        <!-- ÁLBUM DE FOTOS -->
+        <section class="py-12 px-6 bg-marfil/60 text-center border-t border-dorado/30">
+            <div class="marco-botanico p-6 shadow-soft max-w-xs mx-auto">
+                <h3 class="font-titulo text-base text-azul-oscuro mb-2 font-bold">Álbum Digital de Recuerdos</h3>
+                <p class="text-xs font-light text-azul-oscuro/70 mb-6">Sube tus fotografías tomadas durante el evento para compartirlas con los novios.</p>
+                <a href="#" class="inline-flex items-center gap-2 bg-eucalipto text-blanco-puro px-6 py-3 text-xs font-titulo tracking-widest uppercase hover:bg-azul-oscuro transition-all duration-300 shadow-md rounded-xs">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Subir Fotografías
+                </a>
+            </div>
+        </section>
+
+        <!-- PIE DE PÁGINA -->
+        <footer class="py-12 px-6 text-center text-azul-oscuro">
+            <p class="font-cursiva text-5xl text-eucalipto mb-2">Josué & Alidys</p>
+            <p class="font-titulo text-[10px] tracking-[0.25em] uppercase text-dorado-oscuro font-semibold">¡Gracias por acompañarnos!</p>
+        </footer>
+    </main>
+
+    <!-- MODAL CONFIRMACIÓN RSVP -->
+    <div x-show="modals.confirmacion" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-blanco-puro p-7 max-w-sm w-full marco-botanico text-center shadow-floating" @click.away="modals.confirmacion = false">
+            <h4 class="font-titulo text-lg text-azul-oscuro mb-3 font-bold">¿Confirmar Respuesta?</h4>
+            <p class="text-xs text-azul-oscuro/85 font-light mb-6 leading-relaxed">
+                Una vez enviada, no podrás cambiar tu respuesta desde la página web. ¿Deseas continuar?
+            </p>
+            <div class="flex flex-col gap-3">
+                <button @click="enviarRSVP()" class="bg-eucalipto text-blanco-puro py-3 text-xs font-titulo font-bold tracking-widest uppercase shadow-md hover:bg-eucalipto-suave transition-colors rounded-xs" :disabled="rsvpState.sending">
+                    <span x-show="!rsvpState.sending">Sí, Confirmar</span>
+                    <span x-show="rsvpState.sending">Procesando...</span>
+                </button>
+                <button @click="modals.confirmacion = false" class="border border-azul-oscuro/40 text-azul-oscuro py-3 text-xs font-titulo tracking-widest uppercase hover:bg-azul-oscuro/5 transition-colors rounded-xs" :disabled="rsvpState.sending">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGALOS FÍSICOS -->
+    <div x-show="modals.regalos" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-blanco-puro p-7 max-w-md w-full max-h-[80vh] overflow-y-auto relative text-azul-oscuro marco-botanico shadow-floating" @click.away="modals.regalos = false">
+            <button @click="modals.regalos = false" class="absolute top-4 right-4 text-azul-oscuro/60 hover:text-azul-oscuro"><i data-lucide="x"></i></button>
+                 
+            <h4 class="font-titulo text-lg mb-1 font-bold">Regalos Sugeridos</h4>
+            <p class="text-xs font-light text-azul-oscuro/70 mb-5">Selecciona una sugerencia o registra un obsequio personalizado:</p>
+
+            <div x-show="regalosState.loading" class="py-6 text-center">
+                <i data-lucide="loader-2" class="w-6 h-6 mx-auto animate-spin text-dorado"></i>
+                <p class="mt-2 text-xs font-light">Cargando lista...</p>
+            </div>
+
+            <div x-show="!regalosState.loading" class="space-y-4">
+                <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                    <template x-for="regalo in regalosList" :key="regalo.id">
+                        <label class="flex items-center gap-3 p-3 border border-dorado/30 bg-marfil/80 rounded cursor-pointer transition-colors hover:border-dorado/60"
+                               :class="{'opacity-50 bg-gray-100 cursor-not-allowed': regalo.estado === 'Apartado'}">
+                            <input type="radio" name="regaloSel" :value="regalo.id" x-model="regalosState.seleccionado" 
+                                   :disabled="regalo.estado === 'Apartado'" class="accent-eucalipto">
+                            <div class="flex-1 flex justify-between items-center">
+                                <span class="font-titulo text-xs" x-text="regalo.regalo"></span>
+                                <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full" 
+                                      :class="regalo.estado === 'Apartado' ? 'text-terracota bg-terracota/10' : 'text-dorado-oscuro bg-dorado/10'"
+                                      x-text="regalo.estado"></span>
+                            </div>
+                        </label>
+                    </template>
+                </div>
+                
+                <hr class="border-dorado/30">
+
+                <div>
+                    <label class="flex items-center gap-2 p-3 border border-dorado/30 bg-marfil/80 rounded cursor-pointer">
+                        <input type="radio" name="regaloSel" value="personalizado" x-model="regalosState.seleccionado" class="accent-eucalipto">
+                        <span class="font-titulo text-xs">Daré un regalo distinto</span>
+                    </label>
+                    <div x-show="regalosState.seleccionado === 'personalizado'" class="mt-2">
+                        <input type="text" x-model="regalosState.textoPersonalizado" placeholder="Descripción del regalo..." class="w-full bg-marfil border border-dorado/40 p-2.5 text-xs focus:outline-none rounded-xs">
+                    </div>
+                </div>
+
+                <button @click="apartarRegalo()" class="w-full bg-eucalipto text-blanco-puro py-3 text-xs font-titulo font-bold tracking-widest uppercase disabled:opacity-50 transition-all duration-300 shadow-md rounded-xs"
+                        :disabled="!regalosState.seleccionado || (regalosState.seleccionado === 'personalizado' && !regalosState.textoPersonalizado) || regalosState.sending">
+                    <span x-show="!regalosState.sending">Apartar Obsequio</span>
+                    <span x-show="regalosState.sending">Guardando...</span>
+                </button>
+                
+                <p x-show="regalosState.mensaje" class="text-center text-xs font-bold mt-2" :class="regalosState.exito ? 'text-eucalipto' : 'text-terracota'" x-text="regalosState.mensaje"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGALO ECONÓMICO -->
+    <div x-show="modals.efectivo" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-blanco-puro p-7 max-w-sm w-full relative text-azul-oscuro marco-botanico shadow-floating" @click.away="modals.efectivo = false">
+            <button @click="modals.efectivo = false" class="absolute top-4 right-4 text-azul-oscuro/60 hover:text-azul-oscuro"><i data-lucide="x"></i></button>
+                 
+            <h4 class="font-titulo text-lg mb-4 text-center font-bold">Datos para los Pagos</h4>
+                 
+            <div class="space-y-4">
+                <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
+                    <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Pago Móvil</p>
+                    <p class="flex justify-between">
+                        <span>Banco: <span x-text="config.PagoMovil_Banco || 'Mercantil (0105)'"></span></span>
+                    </p>
+                    <p class="flex justify-between items-center">
+                        <span>Teléfono: <strong id="tlf" x-text="config.PagoMovil_Telefono || '0414-1234567'"></strong></span>
+                        <button @click="copiar('tlf')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                    <p class="flex justify-between items-center">
+                        <span>Cédula: <strong id="ced" x-text="config.PagoMovil_Cedula || 'V-12345678'"></strong></span>
+                        <button @click="copiar('ced')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                </div>
+                <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
+                    <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Cuenta Bancaria</p>
+                    <p class="flex justify-between">
+                        <span>Banco: <span x-text="config.Cuenta_Banco || 'Mercantil'"></span></span>
+                    </p>
+                    <p class="flex justify-between items-center">
+                        <span>Cuenta: <strong id="cta" x-text="config.Cuenta_Numero || '01050000001234567890'"></strong></span>
+                        <button @click="copiar('cta')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                </div>
+                         
+                <p x-show="copiado" class="text-[10px] text-center text-eucalipto font-bold uppercase animate-pulse">¡Copiado al portapapeles!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT ALPINE.JS -->
+    <script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('weddingApp', () => ({
+            apiUrl: 'https://script.google.com/macros/s/AKfycbynim93Jf-as4HYr8BVWseih_sfDiq6_oqhI37ZjxCERnNSUKOdEYFiiX7csRBl5o0E/exec',
+            config: {},
+            mostrarCronograma: false,
+            envelopeOpen: false,
+            envelopeDisappeared: false,
+            contentVisible: false,
+            copiado: false,
+            guestName: 'Invitado',
+            maxPases: 1,
+            targetDate: new Date('2026-11-14T18:00:00').getTime(),
+            countdown: { days: '00', hours: '00', minutes: '00', seconds: '00' },
+            modals: { confirmacion: false, regalos: false, efectivo: false },
+            form: { pases: 1, estado: '' },
+            rsvpState: { checking: true, alreadyResponded: false, sending: false, submitted: false },
+            regalosList: [],
+            regalosState: { loading: true, seleccionado: null, textoPersonalizado: '', sending: false, mensaje: '', exito: false, fetched: false },
+
+            init() {
+                lucide.createIcons();
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('invitado')) this.guestName = urlParams.get('invitado');
+                if (urlParams.has('pases')) {
+                    const pases = parseInt(urlParams.get('pases'));
+                    if (!isNaN(pases) && pases > 0) this.maxPases = pases;
+                }
+                this.cargarConfiguracion();
+                this.updateCountdown();
+                setInterval(() => this.updateCountdown(), 1000);
+            },
+
+            async cargarConfiguracion() {
+                try {
+                    const res = await fetch(`${this.apiUrl}?action=getConfig`);
+                    const data = await res.json();
+                    if (data.config) {
+                        this.config = data.config;
+                        if (data.config.Mostrar_Cronograma) {
+                            this.mostrarCronograma = (data.config.Mostrar_Cronograma.toString().toLowerCase() === 'true');
+                        }
+                        if (data.config.Fecha_Boda) {
+                            this.targetDate = new Date(data.config.Fecha_Boda).getTime();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error al cargar la configuración dinámica:", e);
+                }
+            },
+
+            abrirSobre() {
+                if (this.envelopeOpen) return;
+                this.envelopeOpen = true;
+                setTimeout(() => { this.contentVisible = true; }, 800);
+                setTimeout(() => {
+                    this.envelopeDisappeared = true;
+                    window.scrollTo(0, 0);
+                    this.checkRSVP();
+                }, 3200);
+            },
+
+            updateCountdown() {
+                const distance = this.targetDate - new Date().getTime();
+                if (distance < 0) {
+                    this.countdown = { days: '00', hours: '00', minutes: '00', seconds: '00' };
+                    return;
+                }
+                this.countdown.days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                this.countdown.hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                this.countdown.minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                this.countdown.seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+            },
+
+            async checkRSVP() {
+                try {
+                    const res = await fetch(`${this.apiUrl}?action=checkRSVP&nombre=${encodeURIComponent(this.guestName)}`);
+                    const data = await res.json();
+                    if (data.respondido) this.rsvpState.alreadyResponded = true;
+                } catch (e) {
+                    console.error("Error al verificar RSVP:", e);
+                } finally {
+                    this.rsvpState.checking = false;
+                }
+            },
+
+            iniciarConfirmacion(estado) {
+                this.form.estado = estado;
+                this.modals.confirmacion = true;
+            },
+
+            async enviarRSVP() {
+                this.rsvpState.sending = true;
+                try {
+                    const payload = { action: 'saveRSVP', nombre: this.guestName, pases: this.form.pases, estado: this.form.estado };
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (data.success) {
+                        this.rsvpState.submitted = true;
+                        this.modals.confirmacion = false;
+                    } else {
+                        alert(data.message || "Error al registrar respuesta.");
+                    }
+                } catch (e) {
+                    alert("Error de conexión al enviar el RSVP.");
+                } finally {
+                    this.rsvpState.sending = false;
+                }
+            },
+
+            async abrirModalRegalosFisicos() {
+                this.modals.regalos = true;
+                if (!this.regalosState.fetched) {
+                    this.regalosState.loading = true;
+                    try {
+                        const res = await fetch(`${this.apiUrl}?action=getRegalos`);
+                        const data = await res.json();
+                        if (data.regalos) this.regalosList = data.regalos;
+                        this.regalosState.fetched = true;
+                    } catch (e) {
+                        this.regalosState.mensaje = "Error al cargar la lista.";
+                    } finally {
+                        this.regalosState.loading = false;
+                    }
+                }
+            },
+
+            async apartarRegalo() {
+                this.regalosState.sending = true;
+                this.regalosState.mensaje = '';
+                try {
+                    const payload = {
+                        action: 'apartarRegalo',
+                        nombre: this.guestName,
+                        id: this.regalosState.seleccionado,
+                        tipo: this.regalosState.seleccionado === 'personalizado' ? 'Personalizado' : 'Sugerido',
+                        regalo: this.regalosState.seleccionado === 'personalizado' ? this.regalosState.textoPersonalizado : ''
+                    };
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (data.success) {
+                        this.regalosState.exito = true;
+                        this.regalosState.mensaje = "¡Regalo apartado con éxito!";
+                        setTimeout(() => {
+                            this.modals.regalos = false;
+                            this.regalosState.fetched = false;
+                            this.regalosState.textoPersonalizado = '';
+                            this.regalosState.seleccionado = null;
+                        }, 1800);
+                    } else {
+                        this.regalosState.exito = false;
+                        this.regalosState.mensaje = data.message || "No se pudo apartar.";
+                    }
+                } catch (e) {
+                    this.regalosState.exito = false;
+                    this.regalosState.mensaje = "Error de conexión.";
+                } finally {
+                    this.regalosState.sending = false;
+                }
+            },
+
+            copiar(elementId) {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                const text = el.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    this.copiado = true;
+                    setTimeout(() => this.copiado = false, 2000);
+                });
+            }
+        }));
+    });
+    </script>
+</body>
+</html>
