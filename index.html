@@ -43,19 +43,28 @@
     <style>
         [x-cloak] { display: none !important; }
         
-        body {
+        /* FIX DE FONDO SUAVE FIJO SIN DESPLAZAMIENTO NI DUPLICADOS BRUSCOS */
+        html {
             background-color: #F8F9FA;
             background-image: url('assets/fondo_textura.webp');
-            background-repeat: repeat;
-            background-position: center;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100%;
+        }
+
+        body {
+            background: transparent;
             color: #1A2530;
         }
 
         .bg-textura-invitacion {
-            background-color: #FBFBFA;
+            background-color: rgba(251, 251, 250, 0.96);
             background-image: url('assets/fondo_textura.webp');
             background-repeat: repeat;
-            background-position: center;
+            background-position: top center;
+            background-attachment: scroll;
         }
 
         .shadow-soft {
@@ -180,7 +189,7 @@
             <p class="font-cursiva text-5xl text-eucalipto my-1">&</p>
             <h1 class="font-titulo text-3xl sm:text-4xl text-azul-oscuro tracking-wide mb-8 drop-shadow-xs">ALIDYS LISCANO</h1>
             
-            <!-- TARJETA DE BIENVENIDA CON UNIFICACIÓN TIPOGRÁFICA -->
+            <!-- TARJETA DE BIENVENIDA -->
             <div class="marco-botanico p-7 shadow-soft mx-2">
                 <p class="font-cursiva text-4xl text-eucalipto mb-2">¡Hola, <span x-text="guestName"></span>!</p>
                 <p class="text-xs leading-relaxed text-azul-oscuro/85 font-light">
