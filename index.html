@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boda de Josué & Alidys</title>
-         
-    <!-- Fuentes Elegantes con soporte latino/español completo -->
+    
+    <!-- Fuentes Elegantes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@1,400;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-         
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -43,7 +43,6 @@
     <style>
         [x-cloak] { display: none !important; }
         
-        /* FIX DE FONDO SUAVE FIJO SIN DESPLAZAMIENTO NI DUPLICADOS BRUSCOS */
         html {
             background-color: #F8F9FA;
             background-image: url('assets/fondo_textura.webp');
@@ -53,12 +52,10 @@
             background-attachment: fixed;
             min-height: 100%;
         }
-
         body {
             background: transparent;
             color: #1A2530;
         }
-
         .bg-textura-invitacion {
             background-color: rgba(251, 251, 250, 0.96);
             background-image: url('assets/fondo_textura.webp');
@@ -66,15 +63,12 @@
             background-position: top center;
             background-attachment: scroll;
         }
-
         .shadow-soft {
             box-shadow: 0 15px 35px -5px rgba(26, 37, 48, 0.06), 0 5px 15px -3px rgba(197, 160, 89, 0.08);
         }
-
         .shadow-floating {
             box-shadow: 0 20px 40px -10px rgba(95, 133, 117, 0.15), 0 8px 16px -4px rgba(26, 37, 48, 0.06);
         }
-
         .marco-botanico {
             position: relative;
             background-color: rgba(255, 255, 255, 0.94);
@@ -82,7 +76,6 @@
             box-shadow: 0 10px 30px -5px rgba(26, 37, 48, 0.04);
             border-radius: 4px;
         }
-
         .marco-botanico::before {
             content: '';
             position: absolute;
@@ -91,13 +84,10 @@
             pointer-events: none;
             border-radius: 2px;
         }
-
-        /* ANIMACIÓN AL 50% DE VELOCIDAD */
         .escena-sobre-3d {
             perspective: 1600px;
             perspective-origin: center;
         }
-        
         .pieza-sobre {
             position: absolute;
             top: 0;
@@ -109,12 +99,10 @@
             transition: transform 4.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 4s ease-in-out;
             backface-visibility: hidden;
         }
-        
         .sombra-base-sobre {
             filter: drop-shadow(0px 16px 24px rgba(26, 37, 48, 0.2)) 
                     drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.12));
         }
-        
         .solapa-derecha   { transform-origin: right center; }
         .solapa-izquierda { transform-origin: left center; }
         .solapa-arriba    { transform-origin: top center; }
@@ -131,11 +119,9 @@
             opacity: 0;
             pointer-events: none;
         }
-        
         .entrada-invitacion {
             transition: opacity 3.2s ease-in-out, transform 3.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
         .contenedor-sello {
             width: 130px; 
             height: 130px;
@@ -145,13 +131,29 @@
 </head>
 <body class="font-cuerpo antialiased overflow-x-hidden min-h-screen" x-data="weddingApp()">
 
+    <!-- ELEMENTO DE AUDIO DE FONDO -->
+    <audio id="audioFondo" loop preload="auto">
+        <source src="assets/musica.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <!-- BOTÓN FLOTANTE DE CONTROL DE MÚSICA -->
+    <div class="fixed bottom-5 left-5 z-40" x-show="contentVisible" x-transition x-cloak>
+        <button @click="toggleMusica()" 
+                class="w-12 h-12 rounded-full bg-white/90 border border-dorado/50 text-eucalipto shadow-floating flex items-center justify-center backdrop-blur-sm hover:scale-105 active:scale-95 transition-all duration-300"
+                :title="isPlaying ? 'Pausar música' : 'Reproducir música'">
+            <i data-lucide="music" class="w-5 h-5" x-show="!isPlaying"></i>
+            <i data-lucide="disc" class="w-5 h-5 animate-spin text-dorado" x-show="isPlaying"></i>
+        </button>
+    </div>
+
     <!-- CONTENEDOR DEL SOBRE FULLSCREEN -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#F8F9FA] escena-sobre-3d overflow-hidden" 
          :class="{ 'zoom-revelar': envelopeDisappeared }" 
          x-show="!envelopeDisappeared">
         
-        <div class="relative w-full h-full max-w-md mx-auto flex items-center justify-center cursor-pointer select-none" 
-             :class="{ 'sobre-abierto': envelopeOpen }" 
+        <div class="relative w-full h-full max-w-md mx-auto flex items-center justify-center cursor-pointer select-none"
+             :class="{ 'sobre-abierto': envelopeOpen }"
              @click="abrirSobre()">
             
             <img src="assets/sobre_izquierda.webp" alt="Base Sobre" class="pieza-sobre solapa-izquierda sombra-base-sobre">
@@ -161,7 +163,7 @@
 
             <div class="absolute z-20 flex flex-col items-center justify-center pointer-events-auto transition-all duration-1000"
                  :class="{ 'opacity-0 scale-75 pointer-events-none': envelopeOpen }">
-                 
+                
                 <div class="contenedor-sello flex items-center justify-center">
                     <img src="assets/Sobre_sello.webp" 
                          alt="Sello de Cera" 
@@ -177,13 +179,13 @@
     <!-- CONTENIDO PRINCIPAL DE LA INVITACIÓN -->
     <main class="max-w-md mx-auto bg-textura-invitacion shadow-2xl min-h-screen relative pb-20 border-x border-dorado/30 entrada-invitacion"
           :class="contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'">
-         
+        
         <!-- CABECERA DE BIENVENIDA -->
         <section class="pt-16 pb-12 px-6 text-center relative overflow-hidden">
             <div class="w-10 h-10 mx-auto mb-3 text-dorado flex items-center justify-center">
                 <i data-lucide="sparkles" class="w-full h-full stroke-1"></i>
             </div>
-                 
+            
             <p class="font-titulo text-xs tracking-[0.35em] uppercase text-dorado-oscuro mb-3 font-semibold">Nos Casamos</p>
             <h1 class="font-titulo text-3xl sm:text-4xl text-azul-oscuro tracking-wide mb-1 drop-shadow-xs">JOSUÉ MORALES</h1>
             <p class="font-cursiva text-5xl text-eucalipto my-1">&</p>
@@ -201,7 +203,7 @@
         <!-- CONTADOR REGRESIVO ELEGANTE -->
         <section class="py-12 px-6 bg-azul-oscuro text-marfil text-center relative shadow-inner overflow-hidden border-y-2 border-dorado">
             <p class="font-titulo text-xs tracking-[0.25em] uppercase text-dorado mb-8 font-semibold">Faltan Exactamente</p>
-                 
+            
             <div class="flex justify-center gap-3 relative z-10">
                 <div class="flex flex-col items-center w-16 p-3 bg-blanco-puro/10 backdrop-blur-md rounded border border-dorado/40 shadow-md">
                     <span class="font-titulo text-2xl font-bold text-dorado" x-text="countdown.days">00</span>
@@ -220,7 +222,7 @@
                     <span class="text-[9px] uppercase tracking-widest text-marfil/90 mt-1">Seg</span>
                 </div>
             </div>
-            <p class="mt-8 font-titulo text-xs tracking-[0.2em] text-dorado font-semibold">SÁBADO, 14 DE NOVIEMBRE DE 2026</p>
+            <p class="mt-8 font-titulo text-xs tracking-[0.2em] text-dorado font-semibold">DOMINGO, 13 DE DICIEMBRE DE 2026</p>
         </section>
 
         <!-- UBICACIÓN UNIFICADA BOTÁNICA -->
@@ -232,12 +234,11 @@
                 <i data-lucide="church" class="w-8 h-8 mx-auto text-eucalipto mb-3 stroke-1.5"></i>
                 <h3 class="font-titulo text-lg font-bold text-azul-oscuro mb-1">Casa Grande</h3>
                 <p class="text-xs text-eucalipto font-medium mb-5 tracking-wide">Ceremonia Eclesiástica & Recepción</p>
-                         
+                
                 <p class="text-xs text-azul-oscuro/80 font-light mb-1"><strong>Hora de Inicio:</strong> 6:00 PM</p>
                 <p class="text-xs text-azul-oscuro/80 font-light mb-7">Av. Manaure, Coro 4101, Falcón, Venezuela.</p>
-
-                <a href="https://maps.app.goo.gl/WmzYhsFitefC7a7E8" target="_blank" rel="noopener" 
-                   class="inline-flex items-center gap-2 border border-eucalipto text-eucalipto px-7 py-3 text-xs font-titulo tracking-widest uppercase hover:bg-eucalipto hover:text-blanco-puro transition-all duration-300 shadow-xs hover:shadow-md rounded-xs">
+                <a href="https://maps.app.goo.gl/WmzYhsFitefC7a7E8" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-2 border border-eucalipto text-eucalipto px-7 py-3 text-xs font-titulo tracking-widest uppercase hover:bg-eucalipto hover:text-blanco-puro transition-all duration-300 shadow-xs hover:shadow-md rounded-xs">
                     <i data-lucide="map-pin" class="w-4 h-4"></i> Ver en Google Maps
                 </a>
             </div>
@@ -245,17 +246,17 @@
 
         <!-- CRONOGRAMA -->
         <section x-show="mostrarCronograma" class="py-14 px-6 bg-marfil/60 text-center border-y border-dorado/30" x-cloak>
-            <h2 class="font-titulo text-xl text-azul-oscuro mb-8 tracking-widest uppercase font-semibold">Itinerario</h2>
+            <h2 class="font-titulo text-xl text-azul-oscuro mb-8 tracking-widest uppercase font-semibold">Cronograma</h2>
             <div class="relative max-w-xs mx-auto border-l-2 border-dorado/50 text-left pl-6 space-y-8">
                 <div class="relative">
                     <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
                     <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Ceremonia Religiosa</h4>
-                    <p class="text-xs text-azul-oscuro/70 font-light">04:00 PM</p>
+                    <p class="text-xs text-azul-oscuro/70 font-light">06:00 PM</p>
                 </div>
                 <div class="relative">
                     <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
                     <h4 class="font-titulo text-sm font-bold text-azul-oscuro">Cóctel de Bienvenida</h4>
-                    <p class="text-xs text-azul-oscuro/70 font-light">06:00 PM</p>
+                    <p class="text-xs text-azul-oscuro/70 font-light">07:00 PM</p>
                 </div>
                 <div class="relative">
                     <div class="absolute -left-[31px] top-1 bg-marfil p-0.5 rounded-full border border-dorado/40"><div class="w-3 h-3 rounded-full bg-eucalipto"></div></div>
@@ -274,11 +275,11 @@
         <section class="py-14 px-6 text-center">
             <i data-lucide="scissors" class="w-6 h-6 mx-auto text-dorado mb-3 stroke-1.5"></i>
             <h2 class="font-titulo text-lg text-azul-oscuro mb-2 tracking-widest uppercase font-semibold">Código de Vestimenta</h2>
-            <p class="font-titulo text-xs uppercase font-bold text-eucalipto mb-4 tracking-wider">Rigurosa Etiqueta / Formal</p>
+            <p class="font-titulo text-xs uppercase font-bold text-eucalipto mb-4 tracking-wider">Etiqueta / Formal</p>
             <p class="text-xs font-light text-azul-oscuro/85 mb-7 max-w-xs mx-auto leading-relaxed">
                 Sugerimos tonos elegantes y colores pastel, evitando verde eucalipto y azul oscuro. <br>Reservamos amablemente el color blanco para la novia.
             </p>
-                 
+            
             <div class="flex justify-center gap-4">
                 <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #5F8575;" title="Verde Eucalipto"></div>
                 <div class="w-8 h-8 rounded-full border-2 border-dorado/70 shadow-sm" style="background-color: #94B0A5;" title="Eucalipto Suave"></div>
@@ -311,10 +312,10 @@
                     </select>
                 </div>
                 <div class="pt-4 flex flex-col gap-3.5">
-                    <button @click="iniciarConfirmacion('Asistir ')" class="bg-eucalipto text-blanco-puro py-3.5 text-xs font-titulo font-bold tracking-widest uppercase hover:bg-eucalipto-suave transition-all duration-300 shadow-md hover:shadow-lg rounded-xs">
+                    <button @click="iniciarConfirmacion('Asistir')" class="bg-eucalipto text-blanco-puro py-3.5 text-xs font-titulo font-bold tracking-widest uppercase hover:bg-eucalipto-suave transition-all duration-300 shadow-md hover:shadow-lg rounded-xs">
                         Sí, Asistiré
                     </button>
-                    <button @click="iniciarConfirmacion('No asistir ')" class="border border-dorado/60 text-dorado py-3.5 text-xs font-titulo tracking-widest uppercase hover:bg-dorado/10 transition-colors rounded-xs">
+                    <button @click="iniciarConfirmacion('No asistir')" class="border border-dorado/60 text-dorado py-3.5 text-xs font-titulo tracking-widest uppercase hover:bg-dorado/10 transition-colors rounded-xs">
                         Lo Siento, No Asistiré
                     </button>
                 </div>
@@ -328,8 +329,8 @@
 
             <div x-show="rsvpState.submitted" x-cloak class="py-6">
                 <i data-lucide="heart" class="w-10 h-10 mx-auto text-dorado mb-3"></i>
-                <p class="font-titulo text-lg text-dorado mb-2" x-text="form.estado === 'Asistir ' ? '¡Nos vemos en la boda!' : 'Lamentamos que no puedas acompañarnos'"></p>
-                <p class="text-xs font-light text-marfil/80">Gracias por tu confirmación.</p>
+                <p class="font-titulo text-lg text-dorado mb-2" x-text="form.estado === 'Asistir' ? '¡Nos vemos en la boda!' : 'Lamentamos que no puedas acompañarnos'"></p>
+                <p class="text-xs font-light text-marfil/80">Gracias por tu me confirmación.</p>
             </div>
         </section>
 
@@ -356,7 +357,7 @@
                 <h3 class="font-titulo text-base text-azul-oscuro mb-2 font-bold">Álbum Digital de Recuerdos</h3>
                 <p class="text-xs font-light text-azul-oscuro/70 mb-6">Sube tus fotografías tomadas durante el evento para compartirlas con los novios.</p>
                 <a href="#" class="inline-flex items-center gap-2 bg-eucalipto text-blanco-puro px-6 py-3 text-xs font-titulo tracking-widest uppercase hover:bg-azul-oscuro transition-all duration-300 shadow-md rounded-xs">
-                    <i data-lucide="camera" class="w-4 h-4"></i> Subir Fotografías
+                    <i data-lucide="camera" class="w-4 h-4"></i> Subir Fotografía
                 </a>
             </div>
         </section>
@@ -391,7 +392,7 @@
     <div x-show="modals.regalos" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div class="bg-blanco-puro p-7 max-w-md w-full max-h-[80vh] overflow-y-auto relative text-azul-oscuro marco-botanico shadow-floating" @click.away="modals.regalos = false">
             <button @click="modals.regalos = false" class="absolute top-4 right-4 text-azul-oscuro/60 hover:text-azul-oscuro"><i data-lucide="x"></i></button>
-                 
+            
             <h4 class="font-titulo text-lg mb-1 font-bold">Regalos Sugeridos</h4>
             <p class="text-xs font-light text-azul-oscuro/70 mb-5">Selecciona una sugerencia o registra un obsequio personalizado:</p>
 
@@ -409,7 +410,7 @@
                                    :disabled="regalo.estado === 'Apartado'" class="accent-eucalipto">
                             <div class="flex-1 flex justify-between items-center">
                                 <span class="font-titulo text-xs" x-text="regalo.regalo"></span>
-                                <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full" 
+                                <span class="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full"
                                       :class="regalo.estado === 'Apartado' ? 'text-terracota bg-terracota/10' : 'text-dorado-oscuro bg-dorado/10'"
                                       x-text="regalo.estado"></span>
                             </div>
@@ -418,7 +419,6 @@
                 </div>
                 
                 <hr class="border-dorado/30">
-
                 <div>
                     <label class="flex items-center gap-2 p-3 border border-dorado/30 bg-marfil/80 rounded cursor-pointer">
                         <input type="radio" name="regaloSel" value="personalizado" x-model="regalosState.seleccionado" class="accent-eucalipto">
@@ -444,9 +444,9 @@
     <div x-show="modals.efectivo" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div class="bg-blanco-puro p-7 max-w-sm w-full relative text-azul-oscuro marco-botanico shadow-floating" @click.away="modals.efectivo = false">
             <button @click="modals.efectivo = false" class="absolute top-4 right-4 text-azul-oscuro/60 hover:text-azul-oscuro"><i data-lucide="x"></i></button>
-                 
+            
             <h4 class="font-titulo text-lg mb-4 text-center font-bold">Datos para los Pagos</h4>
-                 
+            
             <div class="space-y-4">
                 <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
                     <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Pago Móvil</p>
@@ -462,6 +462,7 @@
                         <button @click="copiar('ced')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                     </p>
                 </div>
+
                 <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
                     <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Cuenta Bancaria</p>
                     <p class="flex justify-between">
@@ -472,7 +473,7 @@
                         <button @click="copiar('cta')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                     </p>
                 </div>
-                         
+                
                 <p x-show="copiado" class="text-[10px] text-center text-eucalipto font-bold uppercase animate-pulse">¡Copiado al portapapeles!</p>
             </div>
         </div>
@@ -489,6 +490,8 @@
             envelopeDisappeared: false,
             contentVisible: false,
             copiado: false,
+            isPlaying: false,
+            audioElement: null,
             guestName: 'Invitado',
             maxPases: 1,
             targetDate: new Date('2026-11-14T18:00:00').getTime(),
@@ -498,15 +501,30 @@
             rsvpState: { checking: true, alreadyResponded: false, sending: false, submitted: false },
             regalosList: [],
             regalosState: { loading: true, seleccionado: null, textoPersonalizado: '', sending: false, mensaje: '', exito: false, fetched: false },
-
+            
             init() {
                 lucide.createIcons();
+                this.audioElement = document.getElementById('audioFondo');
+                
+                // Lectura del parámetro encriptado 'i' o fallback a 'invitado'/'pases'
                 const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('invitado')) this.guestName = urlParams.get('invitado');
-                if (urlParams.has('pases')) {
-                    const pases = parseInt(urlParams.get('pases'));
-                    if (!isNaN(pases) && pases > 0) this.maxPases = pases;
+                if (urlParams.has('i')) {
+                    try {
+                        const jsonStr = decodeURIComponent(escape(atob(urlParams.get('i'))));
+                        const data = JSON.parse(jsonStr);
+                        if (data.n) this.guestName = data.n;
+                        if (data.p) this.maxPases = parseInt(data.p) || 1;
+                    } catch (e) {
+                        console.error("Error al decodificar la URL del invitado:", e);
+                    }
+                } else {
+                    if (urlParams.has('invitado')) this.guestName = urlParams.get('invitado');
+                    if (urlParams.has('pases')) {
+                        const pases = parseInt(urlParams.get('pases'));
+                        if (!isNaN(pases) && pases > 0) this.maxPases = pases;
+                    }
                 }
+
                 this.cargarConfiguracion();
                 this.updateCountdown();
                 setInterval(() => this.updateCountdown(), 1000);
@@ -533,12 +551,37 @@
             abrirSobre() {
                 if (this.envelopeOpen) return;
                 this.envelopeOpen = true;
+
+                // Iniciar la música aprovechando el evento táctil/click del usuario
+                this.playMusica();
+
                 setTimeout(() => { this.contentVisible = true; }, 800);
                 setTimeout(() => {
                     this.envelopeDisappeared = true;
                     window.scrollTo(0, 0);
                     this.checkRSVP();
                 }, 3200);
+            },
+
+            playMusica() {
+                if (this.audioElement) {
+                    this.audioElement.play().then(() => {
+                        this.isPlaying = true;
+                    }).catch(err => {
+                        console.warn("Reproducción automática bloqueada o fallo al reproducir:", err);
+                        this.isPlaying = false;
+                    });
+                }
+            },
+
+            toggleMusica() {
+                if (!this.audioElement) return;
+                if (this.isPlaying) {
+                    this.audioElement.pause();
+                    this.isPlaying = false;
+                } else {
+                    this.playMusica();
+                }
             },
 
             updateCountdown() {

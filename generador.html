@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Invitaciones de Boda</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) CDN estable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'azul-oscuro': '#1A2530',
+                        eucalipto: '#5F8575',
+                        dorado: '#C5A059',
+                        marfil: '#F8F9FA'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-marfil text-azul-oscuro min-h-screen font-sans p-4 md:p-8" x-data="generadorApp()">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- ENCABEZADO -->
+        <header class="bg-white p-6 rounded-xl border border-dorado/30 shadow-sm text-center">
+            <h1 class="text-2xl font-bold text-azul-oscuro flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="text-dorado"></i> Generador de Links & Mensajes
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">Herramienta local para Josué & Alidys</p>
+        </header>
+
+        <!-- CONFIGURACIÓN DE URL BASE -->
+        <div class="bg-white p-6 rounded-xl border border-dorado/30 shadow-sm space-y-4">
+            <h2 class="font-semibold text-sm uppercase tracking-wider text-dorado font-mono">1. Configuración de URL</h2>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">URL Base de la Invitación:</label>
+                <input type="url" x-model="urlBase" placeholder="https://tuboda.com" 
+                       class="w-full border border-gray-300 p-2.5 rounded text-sm focus:outline-none focus:ring-2 focus:ring-eucalipto">
+            </div>
+        </div>
+
+        <!-- MÉTODOS DE ENTRADA -->
+        <div class="bg-white p-6 rounded-xl border border-dorado/30 shadow-sm space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-sm uppercase tracking-wider text-dorado font-mono">2. Carga de Invitados</h2>
+                <div class="flex gap-2">
+                    <button @click="modo = 'excel'" 
+                            :class="modo === 'excel' ? 'bg-eucalipto text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-3 py-1.5 text-xs font-medium rounded transition">
+                        Importar Excel (.xlsx / .csv)
+                    </button>
+                    <button @click="modo = 'texto'" 
+                            :class="modo === 'texto' ? 'bg-eucalipto text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-3 py-1.5 text-xs font-medium rounded transition">
+                        Pegar Texto
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODO EXCEL -->
+            <div x-show="modo === 'excel'" class="space-y-3">
+                <label for="excelFileInput" class="block border-2 border-dashed border-gray-300 p-6 text-center rounded-lg hover:border-eucalipto transition cursor-pointer bg-gray-50/50">
+                    <i data-lucide="file-spreadsheet" class="w-10 h-10 mx-auto text-eucalipto mb-2"></i>
+                    <p class="text-xs text-gray-600">Haz clic aquí para seleccionar tu archivo <strong>Excel (.xlsx)</strong> o <strong>CSV</strong></p>
+                    <p class="text-[10px] text-gray-400 mt-1">Formatos soportados: Nombre en columna A, Pases en columna B (Opcional)</p>
+                    <input id="excelFileInput" type="file" @change="leerExcel($event)" accept=".xlsx, .xls, .csv" class="hidden">
+                </label>
+            </div>
+
+            <!-- MODO TEXTO -->
+            <div x-show="modo === 'texto'" class="space-y-3" x-cloak>
+                <textarea x-model="textoLista" rows="5" 
+                          placeholder="Pegar invitados (un invitado por línea):&#10;Carlos Pérez, 2&#10;Familia Gómez, 4&#10;Ana Rodríguez" 
+                          class="w-full border border-gray-300 p-3 rounded text-xs font-mono focus:outline-none focus:ring-2 focus:ring-eucalipto"></textarea>
+                <button @click="procesarTexto()" class="bg-eucalipto text-white px-4 py-2 text-xs font-medium rounded hover:bg-azul-oscuro transition">
+                    Procesar Lista de Texto
+                </button>
+            </div>
+        </div>
+
+        <!-- LISTA PROCESADA & RESULTADOS -->
+        <div x-show="invitados.length > 0" class="bg-white p-6 rounded-xl border border-dorado/30 shadow-sm space-y-4" x-cloak>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-sm uppercase tracking-wider text-dorado font-mono">
+                    3. Lista Generada (<span x-text="invitados.length"></span> Invitados)
+                </h2>
+                <button @click="limpiar()" class="text-xs text-red-500 hover:underline">Limpiar Todo</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-marfil border-b border-gray-200 text-gray-600">
+                            <th class="p-3">Invitado</th>
+                            <th class="p-3">Pases</th>
+                            <th class="p-3">URL Generada</th>
+                            <th class="p-3 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <template x-for="(inv, index) in invitados" :key="index">
+                            <tr class="hover:bg-gray-50/80">
+                                <td class="p-3 font-semibold text-azul-oscuro" x-text="inv.nombre"></td>
+                                <td class="p-3">
+                                    <span class="bg-eucalipto/10 text-eucalipto font-bold px-2 py-0.5 rounded-full" x-text="inv.pases"></span>
+                                </td>
+                                <td class="p-3 font-mono text-[10px] text-gray-500 max-w-[180px] truncate" x-text="inv.url"></td>
+                                <td class="p-3 text-right space-x-1">
+                                    <button @click="copiar(inv.url, index, 'url')" 
+                                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 rounded text-[11px] transition">
+                                        <span x-text="copiadoIndex === index && copiadoTipo === 'url' ? '¡Copiado!' : 'Copiar URL'"></span>
+                                    </button>
+                                    <button @click="copiar(inv.mensaje, index, 'msg')" 
+                                            class="bg-dorado/20 hover:bg-dorado/30 text-azul-oscuro font-medium px-2.5 py-1 rounded text-[11px] transition">
+                                        <span x-text="copiadoIndex === index && copiadoTipo === 'msg' ? '¡Copiado!' : 'Copiar Mensaje'"></span>
+                                    </button>
+                                    <a :href="inv.waUrl" target="_blank" 
+                                       class="inline-block bg-eucalipto hover:bg-azul-oscuro text-white px-2.5 py-1 rounded text-[11px] transition">
+                                        WhatsApp
+                                    </a>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('generadorApp', () => ({
+            urlBase: 'https://tuboda.com',
+            modo: 'excel',
+            textoLista: '',
+            invitados: [],
+            copiadoIndex: null,
+            copiadoTipo: null,
+
+            init() {
+                lucide.createIcons();
+            },
+
+            leerExcel(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (typeof XLSX === 'undefined') {
+                    alert('Error: La librería para leer archivos Excel no se ha cargado. Verifica tu conexión a internet.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                        const procesados = [];
+                        rows.forEach((row) => {
+                            if (!row || row.length === 0) return;
+                            const nombre = String(row[0] || '').trim();
+                            if (!nombre || nombre.toLowerCase() === 'nombre' || nombre.toLowerCase() === 'invitado') return;
+                            
+                            let pases = parseInt(row[1]);
+                            if (isNaN(pases) || pases <= 0) pases = 1;
+
+                            procesados.push(this.crearObjetoInvitado(nombre, pases));
+                        });
+
+                        this.invitados = procesados;
+                        this.$nextTick(() => lucide.createIcons());
+                    } catch (err) {
+                        alert('Ocurrió un error al procesar el archivo Excel. Asegúrate de que sea un archivo válido (.xlsx o .csv).');
+                        console.error(err);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            },
+
+            procesarTexto() {
+                if (!this.textoLista.trim()) return;
+                const lineas = this.textoLista.split('\n');
+                const procesados = [];
+
+                lineas.forEach(linea => {
+                    if (!linea.trim()) return;
+                    const partes = linea.split(',');
+                    const nombre = partes[0].trim();
+                    let pases = 1;
+                    if (partes.length > 1) {
+                        const parsed = parseInt(partes[1].trim());
+                        if (!isNaN(parsed) && parsed > 0) pases = parsed;
+                    }
+                    if (nombre) {
+                        procesados.push(this.crearObjetoInvitado(nombre, pases));
+                    }
+                });
+
+                this.invitados = procesados;
+                this.$nextTick(() => lucide.createIcons());
+            },
+
+            crearObjetoInvitado(nombre, pases) {
+                const payload = JSON.stringify({ n: nombre, p: pases });
+                const token = btoa(unescape(encodeURIComponent(payload)));
+                
+                const cleanBase = this.urlBase.replace(/\/$/, '');
+                const urlInvitacion = `${cleanBase}/?i=${token}`;
+
+                const mensajeRaw = `¡Hola, ${nombre}!\n\nQueremos decirte que: ¡nos casamos! \n\nY deseamos compartir este día tan especial contigo.\n\n🤎En el enlace podrás encontrar todos los detalles respecto al evento: fecha, lugar, cuenta regresiva, entre otros.\n\n🤎Es una invitación interactiva, haz click en los dibujos para abrir cada menú y ver la información. \n\n🤎No olvides rellenar el formulario de confirmación de asistencia antes del 30 de noviembre. \n\n¡Nos vemos en la boda!\n\n“Ahora, pues, permanecen tres virtudes: la fe, la esperanza y el amor. Pero el mayor de ellos me el amor (1 Corintios 13:13)”\n\nAtte: Josué & Alidys.\n\n${urlInvitacion}`;
+
+                const waUrl = `https://wa.me/?text=${encodeURIComponent(mensajeRaw)}`;
+
+                return {
+                    nombre,
+                    pases,
+                    url: urlInvitacion,
+                    mensaje: mensajeRaw,
+                    waUrl
+                };
+            },
+
+            copiar(texto, index, tipo) {
+                navigator.clipboard.writeText(texto).then(() => {
+                    this.copiadoIndex = index;
+                    this.copiadoTipo = tipo;
+                    setTimeout(() => {
+                        this.copiadoIndex = null;
+                        this.copiadoTipo = null;
+                    }, 2000);
+                });
+            },
+
+            limpiar() {
+                this.invitados = [];
+                this.textoLista = '';
+                const input = document.getElementById('excelFileInput');
+                if (input) input.value = '';
+            }
+        }));
+    });
+    </script>
+</body>
+</html>
