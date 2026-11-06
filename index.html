@@ -330,7 +330,7 @@
             <div x-show="rsvpState.submitted" x-cloak class="py-6">
                 <i data-lucide="heart" class="w-10 h-10 mx-auto text-dorado mb-3"></i>
                 <p class="font-titulo text-lg text-dorado mb-2" x-text="form.estado === 'Asistir' ? '¡Nos vemos en la boda!' : 'Lamentamos que no puedas acompañarnos'"></p>
-                <p class="text-xs font-light text-marfil/80">Gracias por tu me confirmación.</p>
+                <p class="text-xs font-light text-marfil/80">Gracias por tu confirmación.</p>
             </div>
         </section>
 
@@ -440,14 +440,15 @@
         </div>
     </div>
 
-    <!-- MODAL REGALO ECONÓMICO -->
+    <!-- MODAL REGALO ECONÓMICO (ACTUALIZADO) -->
     <div x-show="modals.efectivo" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="bg-blanco-puro p-7 max-w-sm w-full relative text-azul-oscuro marco-botanico shadow-floating" @click.away="modals.efectivo = false">
+        <div class="bg-blanco-puro p-7 max-w-sm w-full relative text-azul-oscuro marco-botanico shadow-floating max-h-[85vh] overflow-y-auto" @click.away="modals.efectivo = false">
             <button @click="modals.efectivo = false" class="absolute top-4 right-4 text-azul-oscuro/60 hover:text-azul-oscuro"><i data-lucide="x"></i></button>
             
             <h4 class="font-titulo text-lg mb-4 text-center font-bold">Datos para los Pagos</h4>
             
             <div class="space-y-4">
+                <!-- PAGO MÓVIL -->
                 <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
                     <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Pago Móvil</p>
                     <p class="flex justify-between">
@@ -455,14 +456,15 @@
                     </p>
                     <p class="flex justify-between items-center">
                         <span>Teléfono: <strong id="tlf" x-text="config.PagoMovil_Telefono || '0414-1234567'"></strong></span>
-                        <button @click="copiar('tlf')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                        <button @click="copiarTexto(config.PagoMovil_Telefono || '0414-1234567')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                     </p>
                     <p class="flex justify-between items-center">
                         <span>Cédula: <strong id="ced" x-text="config.PagoMovil_Cedula || 'V-12345678'"></strong></span>
-                        <button @click="copiar('ced')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                        <button @click="copiarTexto(config.PagoMovil_Cedula || 'V-12345678')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                     </p>
                 </div>
 
+                <!-- CUENTA BANCARIA -->
                 <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
                     <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Cuenta Bancaria</p>
                     <p class="flex justify-between">
@@ -470,7 +472,37 @@
                     </p>
                     <p class="flex justify-between items-center">
                         <span>Cuenta: <strong id="cta" x-text="config.Cuenta_Numero || '01050000001234567890'"></strong></span>
-                        <button @click="copiar('cta')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                        <button @click="copiarTexto(config.Cuenta_Numero || '01050000001234567890')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                </div>
+                
+                <!-- BINANCE USDT -->
+                <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
+                    <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Binance (USDT)</p>
+                    <p class="flex justify-between items-center">
+                        <span>Email: <strong>Alidysliscano@gmail.com</strong></span>
+                        <button @click="copiarTexto('Alidysliscano@gmail.com')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                    <p class="flex justify-between items-center">
+                        <span>ID: <strong>386783375</strong></span>
+                        <button @click="copiarTexto('386783375')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                </div>
+
+                <!-- PAYPAL -->
+                <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-2 rounded-xs shadow-xs">
+                    <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">PayPal (Dólares)</p>
+                    <p class="flex justify-between items-center">
+                        <span>Correo: <strong>Alidysliscano@gmail.com</strong></span>
+                        <button @click="copiarTexto('Alidysliscano@gmail.com')" class="text-dorado hover:text-eucalipto p-1 transition-colors"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                    </p>
+                </div>
+
+                <!-- DIVISAS EN EFECTIVO -->
+                <div class="bg-marfil/80 p-3.5 border border-dorado/30 text-xs space-y-1 rounded-xs shadow-xs">
+                    <p class="font-titulo font-bold text-dorado-oscuro uppercase tracking-wider">Divisas en Efectivo</p>
+                    <p class="text-azul-oscuro/80 font-light leading-relaxed">
+                        Puedes hacernos llegar tu obsequio en efectivo en un sobre el día del evento.
                     </p>
                 </div>
                 
@@ -683,11 +715,9 @@
                 }
             },
 
-            copiar(elementId) {
-                const el = document.getElementById(elementId);
-                if (!el) return;
-                const text = el.innerText;
-                navigator.clipboard.writeText(text).then(() => {
+            copiarTexto(texto) {
+                if (!texto) return;
+                navigator.clipboard.writeText(texto).then(() => {
                     this.copiado = true;
                     setTimeout(() => this.copiado = false, 2000);
                 });
