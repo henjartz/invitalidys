@@ -94,7 +94,12 @@
                 <h2 class="font-semibold text-sm uppercase tracking-wider text-dorado font-mono">
                     3. Lista Generada (<span x-text="invitados.length"></span> Invitados)
                 </h2>
-                <button @click="limpiar()" class="text-xs text-red-500 hover:underline">Limpiar Todo</button>
+                <div class="flex items-center gap-3">
+                    <button @click="exportarExcel()" class="bg-dorado hover:bg-azul-oscuro text-white px-3 py-1.5 rounded text-xs font-medium transition flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar a Excel
+                    </button>
+                    <button @click="limpiar()" class="text-xs text-red-500 hover:underline">Limpiar Todo</button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -243,6 +248,37 @@
                         this.copiadoTipo = null;
                     }, 2000);
                 });
+            },
+
+            exportarExcel() {
+                if (this.invitados.length === 0) return;
+
+                // Preparar los datos mapeando a un formato amigable para la hoja de cálculo
+                const datosParaExcel = this.invitados.map(inv => ({
+                    'Nombre del Invitado': inv.nombre,
+                    'Pases': inv.pases,
+                    'URL Generada': inv.url,
+                    'Mensaje Completo': inv.mensaje
+                }));
+
+                // Convertir el JSON en una hoja de trabajo (worksheet)
+                const hoja = XLSX.utils.json_to_sheet(datosParaExcel);
+                
+                // Configurar ancho de columnas automático para mejor legibilidad
+                const colWidths = [
+                    { wch: 30 }, // Nombre
+                    { wch: 10 }, // Pases
+                    { wch: 45 }, // URL
+                    { wch: 80 }  // Mensaje
+                ];
+                hoja['!cols'] = colWidths;
+
+                // Crear el libro (workbook) y agregar la hoja
+                const libro = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(libro, hoja, "Invitados Generados");
+
+                // Generar y descargar el archivo
+                XLSX.writeFile(libro, "Lista_Invitaciones_Boda.xlsx");
             },
 
             limpiar() {
