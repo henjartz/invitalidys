@@ -277,7 +277,7 @@
             <h2 class="font-titulo text-lg text-azul-oscuro mb-2 tracking-widest uppercase font-semibold">Código de Vestimenta</h2>
             <p class="font-titulo text-xs uppercase font-bold text-eucalipto mb-4 tracking-wider">Etiqueta / Formal</p>
             <p class="text-xs font-light text-azul-oscuro/85 mb-7 max-w-xs mx-auto leading-relaxed">
-                Sugerimos tonos elegantes y colores pastel, evitando verde eucalipto y azul oscuro. <br>Reservamos amablemente el color blanco para la novia.
+                Sugerimos tonos elegantes y colores pastel, evitando los colores verde eucalipto, azul oscuro y dorado presentados más abajo. <br>Reservamos amablemente el color blanco para la novia.
             </p>
             
             <div class="flex justify-center gap-4">
@@ -291,7 +291,7 @@
         <!-- FORMULARIO RSVP -->
         <section class="py-14 px-6 bg-azul-oscuro text-marfil text-center relative border-t-2 border-dorado" id="rsvp">
             <h2 class="font-titulo text-xl text-dorado mb-1 tracking-widest uppercase font-semibold">Confirmación de Asistencia</h2>
-            <p class="text-[10px] tracking-widest uppercase text-marfil/70 mb-8 font-light">Por favor confirma antes del 01 de Noviembre de 2026</p>
+            <p class="text-[10px] tracking-widest uppercase text-marfil/70 mb-8 font-light">Por favor confirma antes del 30 de Noviembre de 2026</p>
 
             <div x-show="rsvpState.checking" class="py-8">
                 <i data-lucide="loader-2" class="w-8 h-8 mx-auto animate-spin text-dorado"></i>
@@ -557,6 +557,8 @@
                     }
                 }
 
+                this.form.pases = this.maxPases;
+                
                 this.cargarConfiguracion();
                 this.updateCountdown();
                 setInterval(() => this.updateCountdown(), 1000);
